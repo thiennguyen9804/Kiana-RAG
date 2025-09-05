@@ -21,6 +21,9 @@ android {
                 cppFlags += listOf("-std=c++17")
             }
         }
+//        ndk {
+//            abiFilters += setOf("armeabi-v7a", "arm64-v8a")
+//        }
     }
 
     buildTypes {

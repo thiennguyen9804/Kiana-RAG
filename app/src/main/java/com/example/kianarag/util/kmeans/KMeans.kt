@@ -2,7 +2,7 @@ package com.example.kianarag.util.kmeans
 
 import android.util.Log
 import com.example.kianarag.util.checkDataSetSanity
-import com.example.kianarag.util.sqDistance
+import com.example.kianarag.util.sqL2DistanceTo
 import java.util.Random
 
 class KMeans(
@@ -16,7 +16,7 @@ class KMeans(
         var TAG: String = "KMeans"
     }
 
-    fun predict(k: Int, inputData: List<FloatArray>): List<Mean> {
+    fun predict(k: Int, inputData: Array<FloatArray>): List<Mean> {
         checkDataSetSanity(inputData)
         val dimension = inputData[0].size
         val means = mutableListOf<Mean>()
@@ -38,7 +38,7 @@ class KMeans(
         return means
     }
 
-    private fun step(means: MutableList<Mean>, inputData: List<FloatArray>): Boolean {
+    private fun step(means: MutableList<Mean>, inputData: Array<FloatArray>): Boolean {
         // Clear previous state
         means.forEach { it.closestItems.clear() }
 
@@ -66,9 +66,11 @@ class KMeans(
             }
 
             // Check if centroid moved significantly
-            if (sqDistance(oldCentroid, mean.centroid) > sqConvergenceEpsilon) {
+            if (oldCentroid.sqL2DistanceTo(mean.centroid) > sqConvergenceEpsilon) {
                 converged = false
             }
+
+
         }
         return converged
     }
@@ -77,7 +79,8 @@ class KMeans(
         var nearest: Mean? = null
         var nearestDistance = Float.MAX_VALUE
         means.forEach { mean ->
-            val distance = sqDistance(point, mean.centroid)
+//            val distance = sqDistance(point, mean.centroid)
+            val distance = point.sqL2DistanceTo(mean.centroid)
             if (distance < nearestDistance) {
                 nearest = mean
                 nearestDistance = distance

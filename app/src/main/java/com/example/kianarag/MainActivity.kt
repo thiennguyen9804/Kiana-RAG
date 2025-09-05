@@ -12,17 +12,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.kianarag.ui.theme.KianaRAGTheme
-import com.example.kianarag.util.matrix.MatrixAddition
 
-val matrix = MatrixAddition()
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val c = matrix.cal(
-            floatArrayOf(1.0f, 2.0f, 3.0f),
-            floatArrayOf(4.0f, 5.0f, 6.0f)
-        )
-        val string = c.contentToString() // [5, 7, 9]
+
+        val string = "Kiana" // [5, 7, 9]
         enableEdgeToEdge()
         setContent {
             KianaRAGTheme {

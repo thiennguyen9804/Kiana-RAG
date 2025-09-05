@@ -1,5 +1,7 @@
 package com.example.kianarag.util
 
+
+// Principal Component Analysis
 class PCA(val nComponents: Int) {
     private lateinit var mean: FloatArray
     private lateinit var components: Array<FloatArray> // Ma trận W (D x nComponents)
@@ -11,10 +13,8 @@ class PCA(val nComponents: Int) {
      * @return Transformed data (N x nComponents matrix)
      */
     fun fitTransform(data: Array<FloatArray>): Array<FloatArray> {
-        require(data.isNotEmpty()) { "Data set is empty." }
-        requireNotNull(data[0]) { "Bad data set format." }
+        checkDataSetSanity(data)
         val dimension = data[0].size
-        require(data.all { it.size == dimension }) { "All vectors must have the same dimension." }
         require(nComponents <= dimension) { "nComponents must be <= input dimension." }
 
         // 1. Chuẩn hóa dữ liệu (zero-mean)
@@ -113,7 +113,7 @@ class PCA(val nComponents: Int) {
         // Giả lập: Trong thực tế, sử dụng thư viện như Apache Commons Math hoặc ND4J để tính SVD/eigen decomposition
         val d = covMatrix.size
         val eigenValues = FloatArray(d) { 1f } // Placeholder
-        val eigenVectors = Array(d) { FloatArray(d) { if (it == it) 1f else 0f } } // Identity matrix as placeholder
+        val eigenVectors = Array(d) { FloatArray(d) { 1f } } // Identity matrix as placeholder
         // TODO: Thay bằng gọi thư viện SVD/eigen decomposition
         return eigenValues to eigenVectors
     }

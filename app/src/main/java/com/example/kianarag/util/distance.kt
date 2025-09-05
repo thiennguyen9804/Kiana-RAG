@@ -2,10 +2,13 @@ package com.example.kianarag.util
 
 import kotlin.math.sqrt
 
-fun sqDistance(a: FloatArray, b: FloatArray): Float {
-    return a.indices.sumOf { i ->
-        (a[i] - b[i]) * (a[i] - b[i]).toDouble()
+fun FloatArray.sqL2DistanceTo(b: FloatArray): Float {
+    checkDataSetSanity(arrayOf(this, b))
+    return this.indices.sumOf { i ->
+        (this[i] - b[i]) * (this[i] - b[i]).toDouble()
     }.toFloat()
 }
 
-fun distance(a: FloatArray, b: FloatArray): Float = sqrt(sqDistance(a, b))
+fun FloatArray.l2DistanceTo(b: FloatArray): Float {
+    return sqrt(this.sqL2DistanceTo(b))
+}
