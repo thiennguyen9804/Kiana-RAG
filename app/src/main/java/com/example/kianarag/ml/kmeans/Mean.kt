@@ -1,4 +1,4 @@
-package com.example.kianarag.util.kmeans
+package com.example.kianarag.ml.kmeans
 data class Mean(var centroid: FloatArray) {
     val closestItems: MutableList<FloatArray> = mutableListOf()
 

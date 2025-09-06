@@ -1,4 +1,4 @@
-package com.example.kianarag.util.kmeans
+package com.example.kianarag.ml.kmeans
 
 import android.util.Log
 import com.example.kianarag.util.checkDataSetSanity
@@ -16,7 +16,7 @@ class KMeans(
         var TAG: String = "KMeans"
     }
 
-    fun predict(k: Int, inputData: Array<FloatArray>): List<Mean> {
+    fun fitPredict(k: Int, inputData: Array<FloatArray>): List<Mean> {
         checkDataSetSanity(inputData)
         val dimension = inputData[0].size
         val means = mutableListOf<Mean>()
@@ -79,7 +79,6 @@ class KMeans(
         var nearest: Mean? = null
         var nearestDistance = Float.MAX_VALUE
         means.forEach { mean ->
-//            val distance = sqDistance(point, mean.centroid)
             val distance = point.sqL2DistanceTo(mean.centroid)
             if (distance < nearestDistance) {
                 nearest = mean
@@ -88,5 +87,6 @@ class KMeans(
         }
         return nearest ?: throw IllegalStateException("No means available")
     }
+
 
 }

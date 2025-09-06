@@ -2,7 +2,7 @@ package com.example.kianarag.util
 
 
 // Principal Component Analysis
-class PCA(val nComponents: Int) {
+class PrincipalComponentAnalysis(val nComponents: Int) {
     private lateinit var mean: FloatArray
     private lateinit var components: Array<FloatArray> // Ma trận W (D x nComponents)
     private lateinit var explainedVariance: FloatArray // Eigenvalues
