@@ -1,3 +1,5 @@
+
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -16,11 +18,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                cppFlags += listOf("-std=c++17")
-            }
-        }
+//        externalNativeBuild {
+//            cmake {
+//                cppFlags += listOf("-std=c++17")
+//            }
+//        }
 //        ndk {
 //            abiFilters += setOf("armeabi-v7a", "arm64-v8a")
 //        }
@@ -72,4 +74,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-math3
+    implementation(libs.commons.math3)
 }

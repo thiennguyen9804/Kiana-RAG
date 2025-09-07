@@ -3,8 +3,6 @@ package com.example.kianarag.ml.product_quantization
 import com.example.kianarag.data.CodebooksManager
 import com.example.kianarag.ml.kmeans.KMeans
 import com.example.kianarag.util.checkDataSetSanity
-import com.example.kianarag.util.l2DistanceTo
-import com.example.kianarag.util.l2DistanceToSub
 import java.util.Random
 
 object ProductQuantization {
@@ -69,7 +67,6 @@ object ProductQuantization {
         val pqCode = PqCodeKey(IntArray(m))
 
         for (i in 0 until m) {
-            val subVector = vector.sliceArray(i * subDim until (i + 1) * subDim)
             val centroids = codebookManager.getCentroids(i) // List<FloatArray>
 
             // Tìm centroid gần nhất

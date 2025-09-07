@@ -9,8 +9,6 @@ class PqCodeKey(val backing: IntArray) {
 
     override fun hashCode(): Int = backing.contentHashCode()
 
-    val size: Int get() = backing.size
 
-    operator fun get(index: Int): Int = backing[index]
-    operator fun set(index: Int, value: Int) { backing[index] = value }
 }
+

@@ -2,7 +2,7 @@ package com.example.kianarag.ml.kmeans
 
 import android.util.Log
 import com.example.kianarag.util.checkDataSetSanity
-import com.example.kianarag.util.sqL2DistanceTo
+import org.apache.commons.math3.linear.ArrayRealVector
 import java.util.Random
 
 class KMeans(
@@ -16,14 +16,17 @@ class KMeans(
         var TAG: String = "KMeans"
     }
 
-    fun fitPredict(k: Int, inputData: Array<FloatArray>): List<Mean> {
-        checkDataSetSanity(inputData)
-        val dimension = inputData[0].size
+
+
+    fun fitPredict(k: Int, inputData: Array<ArrayRealVector>): List<Mean> {
+//        checkDataSetSanity(inputData)
+        val dimension = inputData[0].dimension
         val means = mutableListOf<Mean>()
 
         repeat(k) {
-            val centroid = FloatArray(dimension) { randomState.nextFloat() }
-            means.add(Mean(centroid))
+            val centroid = DoubleArray(dimension) { randomState.nextDouble() }
+            val centroidVector = ArrayRealVector(centroid, false)
+            means.add(Mean(centroidVector))
         }
 
         var converged = false
@@ -38,7 +41,7 @@ class KMeans(
         return means
     }
 
-    private fun step(means: MutableList<Mean>, inputData: Array<FloatArray>): Boolean {
+    private fun step(means: MutableList<Mean>, inputData: Array<ArrayRealVector>): Boolean {
         // Clear previous state
         means.forEach { it.closestItems.clear() }
 
@@ -47,39 +50,35 @@ class KMeans(
             val nearest = nearestMean(point, means)
             nearest.closestItems.add(point)
         }
-
         var converged = true
         // Move each mean towards the nearest data set points
         means.forEach { mean ->
             if (mean.closestItems.isEmpty()) return@forEach
-
             // Compute new centroid: sum all points and average
             val oldCentroid = mean.centroid
-            mean.centroid = FloatArray(oldCentroid.size)
+            mean.centroid = ArrayRealVector(oldCentroid, true)
             mean.closestItems.forEach { point ->
-                mean.centroid.forEachIndexed { index, _ ->
-                    mean.centroid[index] += point[index]
-                }
+                val pointVector = ArrayRealVector(point, false)
+                mean.centroid.add(pointVector)
             }
-            mean.centroid.forEachIndexed { index, value ->
-                mean.centroid[index] = value / mean.closestItems.size
+            if(mean.closestItems.isNotEmpty()) {
+                mean.centroid.mapMultiply(1.0 / mean.closestItems.size)
             }
 
+            mean.closestItems
             // Check if centroid moved significantly
-            if (oldCentroid.sqL2DistanceTo(mean.centroid) > sqConvergenceEpsilon) {
+            if (oldCentroid.getDistance(mean.centroid) > sqConvergenceEpsilon) {
                 converged = false
             }
-
-
         }
         return converged
     }
 
-    private fun nearestMean(point: FloatArray, means: List<Mean>): Mean {
+    private fun nearestMean(point: ArrayRealVector, means: List<Mean>): Mean {
         var nearest: Mean? = null
-        var nearestDistance = Float.MAX_VALUE
+        var nearestDistance = Double.MAX_VALUE
         means.forEach { mean ->
-            val distance = point.sqL2DistanceTo(mean.centroid)
+            val distance = point.getDistance(mean.centroid)
             if (distance < nearestDistance) {
                 nearest = mean
                 nearestDistance = distance

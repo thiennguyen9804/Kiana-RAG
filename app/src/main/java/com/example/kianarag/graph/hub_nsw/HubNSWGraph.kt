@@ -1,7 +1,8 @@
-package com.example.kianarag.util.hub_nsw
+package com.example.kianarag.graph.hub_nsw
 
-import com.example.kianarag.util.hub_nsw.point.PqHubNSWPoint
-import com.example.kianarag.util.l2DistanceTo
+import com.example.kianarag.graph.hub_nsw.point.PqHubNSWPoint
+import org.apache.commons.math3.linear.ArrayRealVector
+//import com.example.kianarag.util.l2DistanceTo
 import java.util.PriorityQueue
 
 class HubNSWGraph(
@@ -24,15 +25,15 @@ class HubNSWGraph(
         // Tìm ứng viên hàng xóm bằng greedy search
         val candidates = searchCandidates(vector, efConstruction)
         // Chọn M hàng xóm gần nhất
-        val neighbors = candidates.sortedBy { vector.l2DistanceTo(it.vector) }.take(M)
+        val neighbors = candidates.sortedBy { vector.getDistance(it.vector) }.take(M)
         // Kết nối bidirectional
         point.neighbors.addAll(neighbors)
         neighbors.forEach { it.neighbors.add(point) }
     }
 
-    private fun searchCandidates(query: FloatArray, ef: Int): List<PqHubNSWPoint> {
+    private fun searchCandidates(query: ArrayRealVector, ef: Int): List<PqHubNSWPoint> {
         val visited = mutableSetOf<PqHubNSWPoint>()
-        val candidates = PriorityQueue(compareBy<PqHubNSWPoint> { query.l2DistanceTo(it.vector) })
+        val candidates = PriorityQueue(compareBy<PqHubNSWPoint> { query.getDistance(it.vector) })
         val start = points.random()
         candidates.add(start)
         visited.add(start)
@@ -50,12 +51,12 @@ class HubNSWGraph(
     }
 
     // Tìm k điểm gần nhất với query
-    fun search(query: FloatArray, k: Int): List<Pair<PqHubNSWPoint, Float>> {
+    fun search(query: ArrayRealVector, k: Int): List<Pair<PqHubNSWPoint, Double>> {
         if (points.isEmpty()) return emptyList()
 
         // Greedy search để tìm efSearch ứng viên
         val visited = mutableSetOf<PqHubNSWPoint>()
-        val candidates = PriorityQueue(compareBy<PqHubNSWPoint> { query.l2DistanceTo(it.vector) })
+        val candidates = PriorityQueue(compareBy<PqHubNSWPoint> { query.getDistance(it.vector) })
         val start = points.random() // Điểm bắt đầu ngẫu nhiên
         candidates.add(start)
         visited.add(start)
@@ -72,7 +73,7 @@ class HubNSWGraph(
 
         // Lấy k điểm gần nhất
         return visited
-            .map { it to query.l2DistanceTo(it.vector) }
+            .map { it to query.getDistance(it.vector) }
             .sortedBy { it.second }
             .take(2 * k) // oversampling
     }
