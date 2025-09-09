@@ -17,7 +17,6 @@ class KianaRAG {
     lateinit var embeddings: List<ArrayRealVector>
     val points: List<GraphPoint> = mutableListOf()
 
-
     val docIds = mutableListOf<String>()
     val metadataIds = mutableListOf<String>()
 

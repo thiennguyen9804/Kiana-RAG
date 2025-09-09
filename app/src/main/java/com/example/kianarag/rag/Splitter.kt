@@ -14,7 +14,7 @@ class Splitter(
         if (text.isEmpty()) return emptyList<String>() to emptyList<Int>()
 
         val chunks = mutableListOf<String>()
-        val offsets = mutableListOf<Long>()
+        val offsets = mutableListOf<Int>()
         var startIndex = 0
 
         while (startIndex < lengthFunction(text)) {
