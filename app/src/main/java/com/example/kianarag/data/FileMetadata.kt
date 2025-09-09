@@ -6,6 +6,6 @@ data class FileMetadata(
     var chunkId: String = UUID.randomUUID().toString(),
     var docId: String,
     var chunkContent: String,
-    val chunkOffset: Long
+    val chunkOffset: Int
 )
 

@@ -1,7 +1,9 @@
 package com.example.kianarag.data
 
-data class Point<T>(
-    val id: Long,
+import java.util.UUID
+
+data class Embedding<T>(
+    val id: String = UUID.randomUUID().toString(),
     val vector: FloatArray,
     val metadata: T? = null,
 ) {
@@ -9,7 +11,7 @@ data class Point<T>(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as Point<*>
+        other as Embedding<*>
 
         if (id != other.id) return false
         if (!vector.contentEquals(other.vector)) return false

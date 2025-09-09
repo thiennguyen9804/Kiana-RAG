@@ -76,4 +76,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     // https://mvnrepository.com/artifact/org.apache.commons/commons-math3
     implementation(libs.commons.math3)
+    implementation(libs.pdfium.android.kt.arrow)
 }

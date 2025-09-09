@@ -1,6 +1,6 @@
 package com.example.kianarag.graph.hub_nsw
 
-import com.example.kianarag.graph.hub_nsw.point.PqHubNSWPoint
+import com.example.kianarag.graph.GraphPoint
 import org.apache.commons.math3.linear.ArrayRealVector
 //import com.example.kianarag.util.l2DistanceTo
 import java.util.PriorityQueue
@@ -10,13 +10,13 @@ class HubNSWGraph(
     private val efConstruction: Int = 200, // Số ứng viên khi thêm điểm
     private val efSearch: Int = 100 // Số ứng viên khi tìm kiếm
 ) {
-    private val points = mutableListOf<PqHubNSWPoint>() // Lưu tất cả điểm
+    private val points = mutableListOf<GraphPoint>() // Lưu tất cả điểm
 
-    fun batchAdd(points: List<PqHubNSWPoint>) {
+    fun batchAdd(points: List<GraphPoint>) {
         points.forEach { add(it) }
     }
 
-    fun add(point: PqHubNSWPoint) {
+    fun add(point: GraphPoint) {
         points.add(point)
         val vector = point.vector
 
@@ -31,9 +31,9 @@ class HubNSWGraph(
         neighbors.forEach { it.neighbors.add(point) }
     }
 
-    private fun searchCandidates(query: ArrayRealVector, ef: Int): List<PqHubNSWPoint> {
-        val visited = mutableSetOf<PqHubNSWPoint>()
-        val candidates = PriorityQueue(compareBy<PqHubNSWPoint> { query.getDistance(it.vector) })
+    private fun searchCandidates(query: ArrayRealVector, ef: Int): List<GraphPoint> {
+        val visited = mutableSetOf<GraphPoint>()
+        val candidates = PriorityQueue(compareBy<GraphPoint> { query.getDistance(it.vector) })
         val start = points.random()
         candidates.add(start)
         visited.add(start)
@@ -51,12 +51,12 @@ class HubNSWGraph(
     }
 
     // Tìm k điểm gần nhất với query
-    fun search(query: ArrayRealVector, k: Int): List<Pair<PqHubNSWPoint, Double>> {
+    fun search(query: ArrayRealVector, k: Int): List<Pair<GraphPoint, Double>> {
         if (points.isEmpty()) return emptyList()
 
         // Greedy search để tìm efSearch ứng viên
-        val visited = mutableSetOf<PqHubNSWPoint>()
-        val candidates = PriorityQueue(compareBy<PqHubNSWPoint> { query.getDistance(it.vector) })
+        val visited = mutableSetOf<GraphPoint>()
+        val candidates = PriorityQueue(compareBy<GraphPoint> { query.getDistance(it.vector) })
         val start = points.random() // Điểm bắt đầu ngẫu nhiên
         candidates.add(start)
         visited.add(start)
