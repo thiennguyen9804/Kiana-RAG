@@ -12,6 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.kianarag.rag.embedding.EmbeddingModel
+import com.example.kianarag.rag.embedding.Tokenizer
 import com.example.kianarag.ui.theme.KianaRAGTheme
 import java.io.File
 import java.io.FileOutputStream
@@ -19,14 +21,22 @@ import java.io.FileOutputStream
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val tokenizer = Tokenizer(
+            context = this
+        )
 
+        val embedder = EmbeddingModel(
+            tokenizer = tokenizer,
+            absoluteModelPath = assetFilePath(this, "gte-small.pt")
+        )
         val string = "Kiana" // [5, 7, 9]
+        val embeddingString = embedder.embed(string)
         enableEdgeToEdge()
         setContent {
             KianaRAGTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = string,
+                        name = embeddingString.toContentString(),
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -34,12 +44,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun assetFilePath(context: Context, assetName: String?): String? {
+    private fun assetFilePath(context: Context, assetName: String): String? {
         val file = File(context.filesDir, assetName)
         if (file.exists() && file.length() > 0) {
             return file.absolutePath
         }
-        context.assets.open(assetName!!).use { `is` ->
+        context.assets.open(assetName).use { `is` ->
             FileOutputStream(file).use { os ->
                 val buffer = ByteArray(4 * 1024)
                 var read: Int
@@ -51,6 +61,10 @@ class MainActivity : ComponentActivity() {
             return file.absolutePath
         }
     }
+}
+
+private fun FloatArray?.toContentString(): String {
+    return this?.joinToString(separator = ", ") ?: "null"
 }
 
 @Composable

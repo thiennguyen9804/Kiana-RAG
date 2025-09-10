@@ -76,9 +76,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     // https://mvnrepository.com/artifact/org.apache.commons/commons-math3
     implementation(libs.commons.math3)
-    implementation(libs.pdfium.android.kt.arrow)
     // https://mvnrepository.com/artifact/org.pytorch/pytorch_android_lite
     implementation(libs.pytorch.android.lite)
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
     implementation(libs.gson)
+    // https://mvnrepository.com/artifact/com.github.mshockwave/pdfium
+//    implementation(libs.pdfium)
 }

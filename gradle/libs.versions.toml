@@ -10,7 +10,7 @@ espressoCore = "3.5.1"
 lifecycleRuntimeKtx = "2.6.1"
 activityCompose = "1.8.0"
 composeBom = "2024.09.00"
-pdfiumAndroidKtArrow = "1.0.33"
+pdfium = "1.0.0"
 pytorch_android_lite = "2.1.0"
 
 [libraries]
@@ -30,7 +30,7 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-pdfium-android-kt-arrow = { module = "io.legere:pdfium-android-kt-arrow", version.ref = "pdfiumAndroidKtArrow" }
+pdfium = { module = "com.github.mshockwave:pdfium", version.ref = "pdfium" }
 pytorch_android_lite = { module = "org.pytorch:pytorch_android_lite", version.ref = "pytorch_android_lite" }
 
 [plugins]

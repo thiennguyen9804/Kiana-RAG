@@ -14,6 +14,9 @@ object CodebooksManager {
             return vector
         }
 
+        val doubleArray = doubleArrayOf(0.0, 1.0, 2.0, 4.0)
+        return ArrayRealVector(doubleArray)
+
     }
 
     fun getCentroids(subSpace: Int): List<ArrayRealVector> {
@@ -22,6 +25,9 @@ object CodebooksManager {
             return centroids
         }
 
+        val doubleArray = doubleArrayOf(0.0, 1.0, 2.0, 4.0)
+        val vector =  ArrayRealVector(doubleArray)
+        return listOf(vector, vector)
     }
 
     fun saveCodebooks(codebooks: List<List<FloatArray>>) {
