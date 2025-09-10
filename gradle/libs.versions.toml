@@ -1,6 +1,7 @@
 [versions]
 agp = "8.12.2"
 commonsMath3 = "3.6.1"
+gradleDownloadTask = "5.6.0"
 gson = "2.13.1"
 kotlin = "2.0.21"
 coreKtx = "1.10.1"
@@ -12,10 +13,12 @@ activityCompose = "1.8.0"
 composeBom = "2024.09.00"
 pdfium = "1.0.0"
 pytorch_android_lite = "2.1.0"
+tasksText = "0.20230731"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 commons-math3 = { module = "org.apache.commons:commons-math3", version.ref = "commonsMath3" }
+gradle-download-task = { module = "de.undercouch:gradle-download-task", version.ref = "gradleDownloadTask" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -32,6 +35,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 pdfium = { module = "com.github.mshockwave:pdfium", version.ref = "pdfium" }
 pytorch_android_lite = { module = "org.pytorch:pytorch_android_lite", version.ref = "pytorch_android_lite" }
+tasks-text = { module = "com.google.mediapipe:tasks-text", version.ref = "tasksText" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

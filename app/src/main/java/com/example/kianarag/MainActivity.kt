@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.kianarag.rag.embedding.EmbeddingModel
-import com.example.kianarag.rag.embedding.Tokenizer
 import com.example.kianarag.ui.theme.KianaRAGTheme
 import java.io.File
 import java.io.FileOutputStream
@@ -21,22 +21,16 @@ import java.io.FileOutputStream
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val tokenizer = Tokenizer(
-            context = this
-        )
 
-        val embedder = EmbeddingModel(
-            tokenizer = tokenizer,
-            absoluteModelPath = assetFilePath(this, "gte-small.pt")
-        )
+
         val string = "Kiana" // [5, 7, 9]
-        val embeddingString = embedder.embed(string)
         enableEdgeToEdge()
         setContent {
             KianaRAGTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+
                     Greeting(
-                        name = embeddingString.toContentString(),
+                        name = embeddingString,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -63,12 +57,11 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private fun FloatArray?.toContentString(): String {
-    return this?.joinToString(separator = ", ") ?: "null"
-}
-
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
+    LaunchedEffect(key1 = Unit) {
+        println (name)
+    }
     Text(
         text = "Hello $name!",
         modifier = modifier

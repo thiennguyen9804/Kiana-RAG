@@ -1,9 +1,11 @@
+import de.undercouch.gradle.tasks.download.Download
 
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("de.undercouch.download")
 }
 
 android {
@@ -18,14 +20,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-//        externalNativeBuild {
-//            cmake {
-//                cppFlags += listOf("-std=c++17")
-//            }
-//        }
-//        ndk {
-//            abiFilters += setOf("armeabi-v7a", "arm64-v8a")
-//        }
     }
 
     buildTypes {
@@ -48,14 +42,34 @@ android {
         compose = true
     }
     externalNativeBuild {
-
-        // Encapsulates your CMake build configurations.
         cmake {
-
             path = file("src/main/cpp/CMakeLists.txt")
         }
     }
 }
+
+extra["ASSET_DIR"] = "$projectDir/src/main/assets"
+extra["TEST_ASSETS_DIR"] = "$projectDir/src/androidTest/assets"
+
+
+tasks.register<Download>("downloadMobileBertModel") {
+    src("https://storage.googleapis.com/mediapipe-models/text_embedder/bert_embedder/float32/1/bert_embedder.tflite")
+    dest("$projectDir/src/main/assets/mobile_bert.tflite")
+    overwrite(false)
+}
+
+tasks.register<Download>("downloadAverageWordModel") {
+    src("https://storage.googleapis.com/mediapipe-models/text_embedder/average_word_embedder/float32/1/average_word_embedder.tflite")
+    dest("$projectDir/src/main/assets/average_word.tflite")
+    overwrite(false)
+}
+
+
+tasks.named("preBuild") {
+    dependsOn("downloadMobileBertModel", "downloadAverageWordModel")
+}
+
+
 
 dependencies {
 
@@ -74,12 +88,8 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-math3
     implementation(libs.commons.math3)
-    // https://mvnrepository.com/artifact/org.pytorch/pytorch_android_lite
-    implementation(libs.pytorch.android.lite)
-    // https://mvnrepository.com/artifact/com.google.code.gson/gson
     implementation(libs.gson)
-    // https://mvnrepository.com/artifact/com.github.mshockwave/pdfium
-//    implementation(libs.pdfium)
+    // https://mvnrepository.com/artifact/com.google.mediapipe/tasks-text
+    implementation(libs.tasks.text)
 }
