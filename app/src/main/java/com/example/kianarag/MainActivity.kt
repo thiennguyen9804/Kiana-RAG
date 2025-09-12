@@ -1,77 +1,116 @@
 package com.example.kianarag
 
-import android.content.Context
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat
+import com.example.kianarag.rag.KianaRAG
 import com.example.kianarag.rag.embedding.EmbeddingModel
-import com.example.kianarag.ui.theme.KianaRAGTheme
+import com.example.kianarag.presentation.theme.KianaRAGTheme
+import com.example.kianarag.util.toArrayRealVector
 import java.io.File
 import java.io.FileOutputStream
 
 class MainActivity : ComponentActivity() {
+    val kianaRag = KianaRAG(this)
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        // Xử lý kết quả
+        val readGranted = permissions[Manifest.permission.READ_EXTERNAL_STORAGE] ?: false
+        val writeGranted = permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] ?: false
+
+        if (readGranted && writeGranted) {
+            Toast.makeText(this, "Permissions granted", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Permissions denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val pickPdfLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenMultipleDocuments()
+    ) { results ->
+        val fileNames = mutableListOf<String>()
+        results.forEachIndexed { index, result ->
+            val selectedFileUri = result
+            selectedFileUri.let { uri ->
+                val fileName = "pdf_file_${index}.pdf"
+                fileNames.add(fileName)
+                copyFileToAppDirectory(uri, fileName)
+            }
+        }
+
+        kianaRag.index(fileNames)
+    }
+
+    private fun copyFileToAppDirectory(pdfUri: Uri, destinationFileName: String) {
+        val inputStream = contentResolver.openInputStream(pdfUri)
+        val outputFile = File(filesDir, destinationFileName)
+        val outputStream = FileOutputStream(outputFile)
+        inputStream?.copyTo(outputStream)
+    }
+
+    private fun checkAndRequestStoragePermissions() {
+        val permissionsToRequest = listOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ).filter {
+            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
-        val string = "Kiana" // [5, 7, 9]
+        checkAndRequestStoragePermissions()
         enableEdgeToEdge()
         setContent {
             KianaRAGTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
                     Greeting(
-                        name = embeddingString,
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
+                        onClick = {
+                            val mimetypes = arrayOf("application/pdf")
+                            pickPdfLauncher.launch(mimetypes)
+                        }
                     )
                 }
             }
         }
     }
-
-    private fun assetFilePath(context: Context, assetName: String): String? {
-        val file = File(context.filesDir, assetName)
-        if (file.exists() && file.length() > 0) {
-            return file.absolutePath
-        }
-        context.assets.open(assetName).use { `is` ->
-            FileOutputStream(file).use { os ->
-                val buffer = ByteArray(4 * 1024)
-                var read: Int
-                while (`is`.read(buffer).also { read = it } != -1) {
-                    os.write(buffer, 0, read)
-                }
-                os.flush()
-            }
-            return file.absolutePath
-        }
-    }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    LaunchedEffect(key1 = Unit) {
-        println (name)
-    }
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    KianaRAGTheme {
-        Greeting("Android")
+fun Greeting(modifier: Modifier, onClick: () -> Unit) {
+    Box(modifier = modifier
+        .fillMaxSize()
+    ) {
+        Button(
+            modifier = Modifier.align(Alignment.Center),
+            onClick = onClick
+        ) {
+            Text("Rag Index")
+        }
     }
 }

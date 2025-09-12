@@ -1,6 +1,5 @@
-package com.example.kianarag.ui.theme
+package com.example.kianarag.presentation.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

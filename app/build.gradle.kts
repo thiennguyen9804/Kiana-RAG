@@ -1,6 +1,5 @@
 import de.undercouch.gradle.tasks.download.Download
 
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -41,11 +40,11 @@ android {
     buildFeatures {
         compose = true
     }
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-        }
-    }
+//    externalNativeBuild {
+//        cmake {
+//            path = file("src/main/cpp/CMakeLists.txt")
+//        }
+//    }
 }
 
 extra["ASSET_DIR"] = "$projectDir/src/main/assets"
@@ -69,8 +68,6 @@ tasks.named("preBuild") {
     dependsOn("downloadMobileBertModel", "downloadAverageWordModel")
 }
 
-
-
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -90,6 +87,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.commons.math3)
     implementation(libs.gson)
-    // https://mvnrepository.com/artifact/com.google.mediapipe/tasks-text
     implementation(libs.tasks.text)
+    implementation(libs.itextg)
 }
