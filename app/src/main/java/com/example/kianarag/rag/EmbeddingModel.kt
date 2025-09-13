@@ -1,13 +1,10 @@
-package com.example.kianarag.rag.embedding
+package com.example.kianarag.rag
 
 import android.content.Context
 import android.util.Log
-import com.example.kianarag.util.toArrayRealVector
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.text.textembedder.TextEmbedder
-import com.google.mediapipe.tasks.text.textembedder.TextEmbedder.TextEmbedderOptions
-import org.apache.commons.math3.linear.ArrayRealVector
 
 class EmbeddingModel(
     private val context: Context,
@@ -42,7 +39,7 @@ class EmbeddingModel(
         try {
             val baseOptions = baseOptionsBuilder.build()
             val optionsBuilder =
-                TextEmbedderOptions.builder().setBaseOptions(baseOptions)
+                TextEmbedder.TextEmbedderOptions.builder().setBaseOptions(baseOptions)
             val options = optionsBuilder.build()
             textEmbedder = TextEmbedder.createFromOptions(context, options)
         } catch (e: IllegalStateException) {

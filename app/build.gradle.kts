@@ -89,4 +89,6 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.tasks.text)
     implementation(libs.itextg)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.navigation.compose)
 }

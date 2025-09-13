@@ -6,12 +6,14 @@ import com.example.kianarag.data.Document
 import com.example.kianarag.data.DocumentManager
 import com.example.kianarag.data.FileMetadata
 import com.example.kianarag.data.MetadataManager
+import com.example.kianarag.di.graph
 import com.example.kianarag.util.PdfLoader
 import com.example.kianarag.di.splitter
 import com.example.kianarag.graph.GraphPoint
-import com.example.kianarag.rag.embedding.EmbeddingModel
-import com.example.kianarag.rag.embedding.EmbeddingModel.Companion.DELEGATE_CPU
-import com.example.kianarag.rag.embedding.EmbeddingModel.Companion.DELEGATE_GPU
+import com.example.kianarag.rag.EmbeddingModel
+import com.example.kianarag.rag.EmbeddingModel.Companion.DELEGATE_CPU
+import com.example.kianarag.rag.EmbeddingModel.Companion.DELEGATE_GPU
+import com.example.kianarag.util.toArrayRealVector
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -74,7 +76,7 @@ class KianaRAG(
     fun index(localFileNames: List<String>) {
         CoroutineScope(Dispatchers.IO).launch {
             saveToDatabase(localFileNames)
-            val maxConcurrentTasks = 4
+            val maxConcurrentTasks = 5
             metadataIds.asFlow()
                 .buffer(maxConcurrentTasks)
                 .map { it ->
@@ -85,11 +87,16 @@ class KianaRAG(
                     }
                 }
                 .toList()
-                .forEachIndexed { index, deferred ->
+                .map { deferred ->
                     val (value, chunkId) = deferred.await()
-                    if (value != null) {
-                        Log.d("KianaRAG", "Chunk No. #$index: ${MetadataManager.getById(chunkId).chunkContent} -> ${value.contentToString()}")
+                    GraphPoint(
+                        docId = chunkId,
+                    ).apply {
+                        vector = value!!.toArrayRealVector()
                     }
+                }
+                .forEach {
+                    graph.add(it)
                 }
         }
 //        metadataIds.forEachIndexed { index, it ->
@@ -103,9 +110,9 @@ class KianaRAG(
         Log.e("EmbeddingModel", error)
     }
 
-//    fun retrieve(query: String, k: Int): List<Pair<String, Double>> {
-//        val queryVector = embedding(query)
-//        val results = graph.search(queryVector, k)
-//        return results.map { it.first.docId to it.second }
-//    }
+    fun retrieve(query: String, k: Int): List<Pair<String, Double>> {
+        val queryVector = embed(query)!!.toArrayRealVector()
+        val results = graph.search(queryVector, k)
+        return results.map { it.first.docId to it.second }
+    }
 }
