@@ -10,7 +10,8 @@ class KMeans(
     private val maxIterations: Int = 30,
     convergenceEpsilon: Float = 0.005f,
 ) {
-    val sqConvergenceEpsilon = convergenceEpsilon * convergenceEpsilon;
+    val sqConvergenceEpsilon = convergenceEpsilon * convergenceEpsilon
+
     companion object {
         var DEBUG: Boolean = false
         var TAG: String = "KMeans"

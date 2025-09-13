@@ -1,4 +1,4 @@
-package com.example.kianarag.presentation.theme
+package com.example.kianarag.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

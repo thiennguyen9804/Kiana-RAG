@@ -1,8 +1,11 @@
-package com.example.kianarag.data
+package com.example.kianarag.util
 
 import android.content.Context
 import com.itextpdf.text.pdf.PdfReader
+import com.itextpdf.text.pdf.parser.FilteredTextRenderListener
 import com.itextpdf.text.pdf.parser.PdfTextExtractor
+import com.itextpdf.text.pdf.parser.SimpleTextExtractionStrategy
+import com.itextpdf.text.pdf.parser.TextExtractionStrategy
 import java.io.File
 
 class PdfLoader(
@@ -21,7 +24,7 @@ class PdfLoader(
         return content to filePath
     }
 
-    fun batchLoad(localFileNames: List<String>): List<Pair<String, String>> {
+    fun load(localFileNames: List<String>): List<Pair<String, String>> {
         return localFileNames.map { load(it) }
 
     }

@@ -68,23 +68,12 @@ class EmbeddingModel(
     }
 
     fun embed(text: String): FloatArray? {
-        return try {
-            textEmbedder?.use {
-                it.embed(text)
-                    .embeddingResult()
-                    .embeddings()
-                    .first()
-                    .floatEmbedding()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-
-
+        return textEmbedder?.embed(text)?.embeddingResult()?.embeddings()?.first()?.floatEmbedding()
     }
-    fun embed(inputs: List<String>): List<ArrayRealVector> {
-        return TODO("Provide the return value")
+    fun embed(inputs: List<String>): List<FloatArray?> {
+        return inputs.map {
+            embed(it)
+        }
     }
 
     fun clearTextEmbedder() {

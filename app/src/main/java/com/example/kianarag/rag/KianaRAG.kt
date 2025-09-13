@@ -1,18 +1,26 @@
 package com.example.kianarag.rag
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import com.example.kianarag.data.Document
 import com.example.kianarag.data.DocumentManager
 import com.example.kianarag.data.FileMetadata
 import com.example.kianarag.data.MetadataManager
-import com.example.kianarag.data.PdfLoader
-import com.example.kianarag.di.graph
+import com.example.kianarag.util.PdfLoader
 import com.example.kianarag.di.splitter
 import com.example.kianarag.graph.GraphPoint
 import com.example.kianarag.rag.embedding.EmbeddingModel
-import com.example.kianarag.util.toArrayRealVector
+import com.example.kianarag.rag.embedding.EmbeddingModel.Companion.DELEGATE_CPU
+import com.example.kianarag.rag.embedding.EmbeddingModel.Companion.DELEGATE_GPU
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.buffer
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.apache.commons.math3.linear.ArrayRealVector
 
 class KianaRAG(
@@ -20,7 +28,10 @@ class KianaRAG(
 ) : EmbeddingModel.EmbedderListener {
     lateinit var embeddings: List<ArrayRealVector>
     val points: List<GraphPoint> = mutableListOf()
-    val embeddingModel = EmbeddingModel(context = context)
+    val embeddingModel = EmbeddingModel(
+        context = context,
+        currentDelegate = DELEGATE_GPU
+    )
     val pdfLoader = PdfLoader(context = context)
 
     val docIds = mutableListOf<String>()
@@ -31,7 +42,7 @@ class KianaRAG(
         return splitter.split(input)
     }
 
-    private fun embedding(input: String): FloatArray? {
+    private fun embed(input: String): FloatArray? {
         return embeddingModel.embed(input)
     }
 
@@ -58,27 +69,34 @@ class KianaRAG(
                 metadataIds.add(fileMetadata.chunkId)
             }
         }
-
     }
 
     fun index(localFileNames: List<String>) {
-        saveToDatabase(localFileNames)
-        metadataIds.forEach {
-            val chunk = MetadataManager.getById(it)
-            val value = embedding(chunk.chunkContent)
-            println("String value: ${chunk.chunkContent} Embedding value: ${value.contentToString()}")
+        CoroutineScope(Dispatchers.IO).launch {
+            saveToDatabase(localFileNames)
+            val maxConcurrentTasks = 4
+            metadataIds.asFlow()
+                .buffer(maxConcurrentTasks)
+                .map { it ->
+                    async(Dispatchers.Default) {
+                        val chunk = MetadataManager.getById(it)
+                        val embedding = embed(chunk.chunkContent)
+                        embedding to chunk.chunkId
+                    }
+                }
+                .toList()
+                .forEachIndexed { index, deferred ->
+                    val (value, chunkId) = deferred.await()
+                    if (value != null) {
+                        Log.d("KianaRAG", "Chunk No. #$index: ${MetadataManager.getById(chunkId).chunkContent} -> ${value.contentToString()}")
+                    }
+                }
         }
-//        val pendingPoints = mutableListOf<GraphPoint>()
-//        metadataIds.forEach {
+//        metadataIds.forEachIndexed { index, it ->
 //            val chunk = MetadataManager.getById(it)
-//            val embedValue = (embedding(chunk.chunkContent))
-//            val graphPoint = GraphPoint(
-//                docId = chunk.docId,
-//            ).apply { vector = embedValue }
-//            pendingPoints.add(graphPoint)
-//
+//            val value = embed(chunk.chunkContent)
+//            println("Chunk No. #${index}: ${chunk.chunkContent} -> ${value.contentToString()}")
 //        }
-//        graph.batchAdd(pendingPoints)
     }
 
     override fun onError(error: String, errorCode: Int) {

@@ -11,7 +11,7 @@ class Splitter(
         require(chunkOverlap < chunkSize) { "chunkOverlap must be less than chunkSize" }
     }
     fun split(text: String): Pair<List<String>, List<Int>> {
-        if (text.isEmpty()) return emptyList<String>() to emptyList<Int>()
+        if (text.isEmpty()) return emptyList<String>() to emptyList()
 
         val chunks = mutableListOf<String>()
         val offsets = mutableListOf<Int>()
@@ -23,6 +23,8 @@ class Splitter(
 
             // Lấy chunk
             val chunk = text.substring(startIndex, endIndex)
+                .trim()
+                .replace('\n', ' ')
             chunks.add(chunk)
             offsets.add(startIndex)
 
