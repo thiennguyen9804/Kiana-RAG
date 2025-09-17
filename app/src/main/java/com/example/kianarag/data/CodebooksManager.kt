@@ -4,7 +4,7 @@ import android.util.LruCache
 import com.example.kianarag.ml.product_quantization.PqCodeKey
 import org.apache.commons.math3.linear.ArrayRealVector
 
-object CodebooksManager {
+class CodebooksManager {
     val pqCodeCache = LruCache<PqCodeKey, ArrayRealVector>(1000)
     val centroidsCache = LruCache<Int, List<ArrayRealVector>>(3)
 
@@ -30,7 +30,7 @@ object CodebooksManager {
         return listOf(vector, vector)
     }
 
-    fun saveCodebooks(codebooks: List<List<FloatArray>>) {
+    fun saveCodebooks(codebooks: List<List<ArrayRealVector>>) {
 
     }
 }

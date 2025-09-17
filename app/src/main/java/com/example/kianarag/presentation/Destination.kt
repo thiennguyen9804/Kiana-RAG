@@ -11,6 +11,6 @@ enum class Destination(
     val icon: ImageVector,
     val contentDescription: String
 ) {
-    INDEX("songs", "Songs", Icons.Default.AdUnits, "Index"),
-    CHAT("album", "Album", Icons.Default.ChatBubble, "Chat"),
+    INDEX("index", "Index", Icons.Default.AdUnits, "Index"),
+    CHAT("chat", "Chat", Icons.Default.ChatBubble, "Chat"),
 }

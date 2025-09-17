@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun ChatScreen(modifier: Modifier = Modifier) {
+
     Box(modifier = modifier
         .fillMaxSize()
     )

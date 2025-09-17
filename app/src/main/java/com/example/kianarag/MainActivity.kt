@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,6 +30,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.kianarag.data.MetadataManager
 import com.example.kianarag.presentation.Destination
 import com.example.kianarag.presentation.chat_screen.ChatScreen
 import com.example.kianarag.presentation.index_screen.IndexScreen
@@ -51,8 +53,7 @@ class MainActivity : ComponentActivity() {
             Toast.makeText(this, "Permissions denied", Toast.LENGTH_SHORT).show()
         }
     }
-
-    val query = "what is Mumbai's former name?"
+    val query = "What is Mumbai's former name?"
 
     private val pickPdfLauncher = registerForActivityResult(
         ActivityResultContracts.OpenMultipleDocuments()
@@ -66,6 +67,7 @@ class MainActivity : ComponentActivity() {
                 copyFileToAppDirectory(uri, fileName)
             }
         }
+
 
         kianaRag.index(fileNames)
     }
@@ -127,7 +129,7 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         modifier = Modifier.padding(innerPadding),
                         navController = navController,
-                        startDestination = startDestination
+                        startDestination = startDestination.route
                     ) {
                         composable(Destination.INDEX.route) {
                             var retrievedText by remember { mutableStateOf("") }
@@ -139,8 +141,12 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onRetrieveClick = {
                                     val resultList = kianaRag.retrieve(query, k = 1)
-                                    val (result, _) = resultList[0]
-                                    retrievedText = result
+                                    Log.d("Rag#Retrieve", resultList.size.toString())
+                                    resultList.forEachIndexed { index, (docId, _) ->
+                                        val metadata = MetadataManager.getById(docId)
+                                        Log.d("Rag#Retrieve", "Chunk #${index}: ${metadata.chunkContent}")
+                                    }
+                                    retrievedText = "Testing"
                                 }
                             )
                         }

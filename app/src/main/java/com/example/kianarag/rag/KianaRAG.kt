@@ -6,13 +6,17 @@ import com.example.kianarag.data.Document
 import com.example.kianarag.data.DocumentManager
 import com.example.kianarag.data.FileMetadata
 import com.example.kianarag.data.MetadataManager
+import com.example.kianarag.di.embeddingCodebooks
+import com.example.kianarag.di.embeddingGraph
+import com.example.kianarag.di.embeddingPq
 import com.example.kianarag.di.graph
-import com.example.kianarag.util.PdfLoader
 import com.example.kianarag.di.splitter
-import com.example.kianarag.graph.GraphPoint
-import com.example.kianarag.rag.EmbeddingModel
-import com.example.kianarag.rag.EmbeddingModel.Companion.DELEGATE_CPU
+import com.example.kianarag.graph.Graph
+import com.example.kianarag.graph.hub_nsw.PqHubNSWNodeNormal
+import com.example.kianarag.ml.kmeans.VectorPoint
+import com.example.kianarag.ml.product_quantization.PqCodeKey
 import com.example.kianarag.rag.EmbeddingModel.Companion.DELEGATE_GPU
+import com.example.kianarag.util.PdfLoader
 import com.example.kianarag.util.toArrayRealVector
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,14 +26,14 @@ import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.apache.commons.math3.linear.ArrayRealVector
+import org.apache.commons.math3.ml.clustering.Clusterable
+import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer
+import org.apache.commons.math3.ml.distance.EuclideanDistance
 
 class KianaRAG(
     private val context: Context
 ) : EmbeddingModel.EmbedderListener {
-    lateinit var embeddings: List<ArrayRealVector>
-    val points: List<GraphPoint> = mutableListOf()
     val embeddingModel = EmbeddingModel(
         context = context,
         currentDelegate = DELEGATE_GPU
@@ -75,9 +79,10 @@ class KianaRAG(
 
     fun index(localFileNames: List<String>) {
         CoroutineScope(Dispatchers.IO).launch {
+            Log.d("Indexing", "Indexing start...")
             saveToDatabase(localFileNames)
             val maxConcurrentTasks = 5
-            metadataIds.asFlow()
+            val vectorResults =  metadataIds.asFlow()
                 .buffer(maxConcurrentTasks)
                 .map { it ->
                     async(Dispatchers.Default) {
@@ -88,22 +93,54 @@ class KianaRAG(
                 }
                 .toList()
                 .map { deferred ->
-                    val (value, chunkId) = deferred.await()
-                    GraphPoint(
-                        docId = chunkId,
-                    ).apply {
-                        vector = value!!.toArrayRealVector()
-                    }
+                    deferred.await()
                 }
-                .forEach {
-                    graph.add(it)
-                }
+
+            val points = vectorResults.map { it.first!!.toArrayRealVector() }
+            val trainSize = (points.size * 0.8).toInt()
+            val trainPoints = points.take(trainSize)
+            val encodePoints = points.drop(trainSize)
+            val trainPqCode = embeddingPq.train(trainPoints, m = 8, k = 5)
+            val encodePqCode = embeddingPq.encode(encodePoints)
+            val pqCodes = trainPqCode + encodePqCode
+
+            val graphPoints = vectorResults.mapIndexed { index, (_, chunkId) ->
+                PqHubNSWNodeNormal(
+                    docId = chunkId,
+                    pqCode = PqCodeKey(pqCodes[index]),
+                    codebooks = embeddingCodebooks
+                )
+            }
+
+            embeddingGraph.add(graphPoints)
+
+            val clusterer = KMeansPlusPlusClusterer<Clusterable>(
+                5, // Số cluster
+                100, // Số lần lặp tối đa
+                EuclideanDistance() // Khoảng cách Euclidean
+            )
+
+
+            Log.d("Indexing", "Indexing done!!! with ${points.size} vector")
         }
-//        metadataIds.forEachIndexed { index, it ->
-//            val chunk = MetadataManager.getById(it)
-//            val value = embed(chunk.chunkContent)
-//            println("Chunk No. #${index}: ${chunk.chunkContent} -> ${value.contentToString()}")
-//        }
+    }
+
+    private fun buildEmbeddingGraph(points: List<PqHubNSWNodeNormal>, graph: Graph) {
+
+    }
+
+    private fun buildCentroidsGraph(points: List<ArrayRealVector>, graph: Graph) {
+        val clusteringPoints = points.map { VectorPoint(it) }
+        val clusterer = KMeansPlusPlusClusterer<Clusterable>(
+            5, // Số cluster
+            100, // Số lần lặp tối đa
+            EuclideanDistance() // Khoảng cách Euclidean
+        )
+        val clusters = clusterer.cluster(clusteringPoints)
+        val centroids = clusters.map { cluster ->
+            ArrayRealVector(cluster.center.point)
+        }
+
     }
 
     override fun onError(error: String, errorCode: Int) {
