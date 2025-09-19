@@ -1,8 +1,8 @@
-package com.example.kianarag.graph.hub_nsw
+package com.example.kianarag.graph
 
-import com.example.kianarag.graph.NormalGraphNode
+import com.example.kianarag.graph.node.GraphNode
+import com.example.kianarag.graph.node.NormalGraphNode
 import org.apache.commons.math3.linear.ArrayRealVector
-//import com.example.kianarag.util.l2DistanceTo
 import java.util.PriorityQueue
 
 class HubNSWGraph(
@@ -31,9 +31,9 @@ class HubNSWGraph(
         neighbors.forEach { it.neighbors.add(point) }
     }
 
-    private fun searchCandidates(query: ArrayRealVector, ef: Int): List<NormalGraphNode> {
-        val visited = mutableSetOf<NormalGraphNode>()
-        val candidates = PriorityQueue(compareBy<NormalGraphNode> { query.getDistance(it.vector) })
+    private fun searchCandidates(query: ArrayRealVector, ef: Int): List<GraphNode> {
+        val visited = mutableSetOf<GraphNode>()
+        val candidates = PriorityQueue(compareBy<GraphNode> { query.getDistance(it.vector) })
         val start = points.random()
         candidates.add(start)
         visited.add(start)
@@ -51,12 +51,12 @@ class HubNSWGraph(
     }
 
     // Tìm k điểm gần nhất với query
-    fun search(query: ArrayRealVector, k: Int): List<Pair<NormalGraphNode, Double>> {
+    fun search(query: ArrayRealVector, k: Int): List<Pair<GraphNode, Double>> {
         if (points.isEmpty()) return emptyList()
 
         // Greedy search để tìm efSearch ứng viên
-        val visited = mutableSetOf<NormalGraphNode>()
-        val candidates = PriorityQueue(compareBy<NormalGraphNode> { query.getDistance(it.vector) })
+        val visited = mutableSetOf<GraphNode>()
+        val candidates = PriorityQueue(compareBy<GraphNode> { query.getDistance(it.vector) })
         val start = points.random() // Điểm bắt đầu ngẫu nhiên
         candidates.add(start)
         visited.add(start)
