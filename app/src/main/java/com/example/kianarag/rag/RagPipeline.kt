@@ -109,7 +109,9 @@ class RagPipeline(private val application: Application) {
 
     /** Stores input texts in the semantic text memory. */
     private fun memorize(facts: List<String>) {
-        val future = config.semanticMemory.getOrNull()?.recordBatchedMemoryItems(ImmutableList.copyOf(facts))
+        val future = config.semanticMemory
+            .getOrNull()
+            ?.recordBatchedMemoryItems(ImmutableList.copyOf(facts))
         future?.get()
     }
 
