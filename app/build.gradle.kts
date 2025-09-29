@@ -91,4 +91,9 @@ dependencies {
     implementation(libs.itextg)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.localagents.rag)
+    implementation(libs.tasks.genai)
+    // https://mvnrepository.com/artifact/io.insert-koin/koin-android
+    implementation(libs.koin.android)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.10.2")
 }

@@ -11,6 +11,7 @@ class PqGraphNode(
     private val pqCodeKey: PqCodeKey,
 ) : GraphNode(metaData), NodeMetaData by metaData {
     override fun getBackingVector(): ArrayRealVector {
+        _vector = codebooksManager.getVector(pqCodeKey)
         return codebooksManager.getVector(pqCodeKey)
     }
 

@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
@@ -20,27 +20,27 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.kianarag.data.MetadataManager
 import com.example.kianarag.presentation.Destination
+import com.example.kianarag.presentation.ChatViewModel
 import com.example.kianarag.presentation.chat_screen.ChatScreen
 import com.example.kianarag.presentation.index_screen.IndexScreen
-import com.example.kianarag.rag.KianaRAG
+import com.example.kianarag.rag.RagPipeline
 import com.example.kianarag.presentation.theme.KianaRAGTheme
 import java.io.File
 import java.io.FileOutputStream
 
 class MainActivity : ComponentActivity() {
-    lateinit var kianaRag: KianaRAG
+    lateinit var chatViewModel: ChatViewModel
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
         }
 
 
-        kianaRag.index(fileNames)
+        chatViewModel.memorizeChunks(fileNames[0])
     }
 
     private fun copyFileToAppDirectory(pdfUri: Uri, destinationFileName: String) {
@@ -92,9 +92,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        kianaRag = KianaRAG(this)
+        chatViewModel = ChatViewModel(application = application)
         checkAndRequestStoragePermissions()
         enableEdgeToEdge()
         setContent {
@@ -136,23 +137,18 @@ class MainActivity : ComponentActivity() {
                             IndexScreen(
                                 retrievedText = retrievedText,
                                 onIndexClick = {
-                                    val mimetypes = arrayOf("application/pdf")
-                                    pickPdfLauncher.launch(mimetypes)
+//                                    val mimetypes = arrayOf("application/pdf")
+//                                    pickPdfLauncher.launch(mimetypes)
+                                    chatViewModel.memorizeChunks("sample_context.txt")
                                 },
                                 onRetrieveClick = {
-                                    val resultList = kianaRag.retrieve(query, k = 1)
-                                    Log.d("Rag#Retrieve", resultList.size.toString())
-                                    resultList.forEachIndexed { index, (docId, _) ->
-                                        val metadata = MetadataManager.getById(docId)
-                                        Log.d("Rag#Retrieve", "Chunk #${index}: ${metadata.chunkContent}")
-                                    }
                                     retrievedText = "Testing"
                                 }
                             )
                         }
 
                         composable(Destination.CHAT.route) {
-                            ChatScreen()
+                            ChatScreen(chatViewModel)
                         }
                     }
 
