@@ -6,18 +6,17 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kianarag.rag.RagPipeline
-import com.example.kianarag.rag.RecursiveCharacterTextSplitter
+import com.example.kianarag.rag.BasicCharacterSplitter
 import com.example.kianarag.util.PdfLoader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 class ChatViewModel(
     private val application: Application
 ) : AndroidViewModel(application = application) {
     private val pdfLoader = PdfLoader(application)
-    private val splitter = RecursiveCharacterTextSplitter(
+    private val splitter = BasicCharacterSplitter(
         chunkSize = 200,
         chunkOverlap = 100
     )

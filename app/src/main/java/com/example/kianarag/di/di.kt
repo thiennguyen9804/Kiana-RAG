@@ -3,7 +3,7 @@ package com.example.kianarag.di
 import com.example.kianarag.data.CodebooksManager
 import com.example.kianarag.graph.Graph
 import com.example.kianarag.ml.product_quantization.ProductQuantization
-import com.example.kianarag.rag.RecursiveCharacterTextSplitter
+import com.example.kianarag.rag.BasicCharacterSplitter
 import com.example.kianarag.util.PdfLoader
 import org.koin.android.ext.koin.androidApplication
 import org.koin.dsl.module
@@ -24,6 +24,6 @@ val ragModule = module {
         PdfLoader(androidApplication())
     }
     single {
-        RecursiveCharacterTextSplitter()
+        BasicCharacterSplitter()
     }
 }

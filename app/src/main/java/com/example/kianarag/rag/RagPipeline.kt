@@ -3,10 +3,10 @@ package com.example.kianarag.rag
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import com.example.kianarag.KianaRAGApplication
 import com.example.kianarag.util.PdfLoader
 import com.google.ai.edge.localagents.rag.chains.ChainConfig
 import com.google.ai.edge.localagents.rag.chains.RetrievalAndInferenceChain
+import com.google.ai.edge.localagents.rag.chunking.TextChunker
 import com.google.ai.edge.localagents.rag.memory.DefaultSemanticTextMemory
 import com.google.ai.edge.localagents.rag.memory.SqliteVectorStore
 import com.google.ai.edge.localagents.rag.models.AsyncProgressListener
@@ -20,36 +20,31 @@ import com.google.ai.edge.localagents.rag.retrieval.RetrievalConfig
 import com.google.ai.edge.localagents.rag.retrieval.RetrievalConfig.TaskType
 import com.google.ai.edge.localagents.rag.retrieval.RetrievalRequest
 import com.google.common.collect.ImmutableList
-import com.google.common.util.concurrent.ListenableFuture
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInference.LlmInferenceOptions
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.guava.await
-import kotlinx.coroutines.launch
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import kotlin.jvm.optionals.getOrNull
 
 class RagPipeline(
     private val application: Application,
     private val pdfLoader: PdfLoader,
-    private val splitter: RecursiveCharacterTextSplitter
+    private val splitter: BasicCharacterSplitter
 ) {
-
     private val mediaPipeLanguageModelOptions: LlmInferenceOptions =
-        LlmInferenceOptions.builder().setModelPath(
-            GEMMA_MODEL_PATH
-        ).setPreferredBackend(LlmInference.Backend.GPU).setMaxTokens(1024).build()
+        LlmInferenceOptions.builder()
+        .setModelPath(GEMMA_MODEL_PATH)
+        .setPreferredBackend(LlmInference.Backend.GPU)
+        .setMaxTokens(1024)
+        .build()
     private val mediaPipeLanguageModelSessionOptions: LlmInferenceSession.LlmInferenceSessionOptions =
-        LlmInferenceSession.LlmInferenceSessionOptions.builder().setTemperature(1.0f)
+        LlmInferenceSession.LlmInferenceSessionOptions.builder().setTemperature(1f)
             .setTopP(0.95f).setTopK(64).build()
     private val mediaPipeLanguageModel: MediaPipeLlmBackend =
         MediaPipeLlmBackend(
-            application.applicationContext, mediaPipeLanguageModelOptions,
+            application.applicationContext,
+            mediaPipeLanguageModelOptions,
             mediaPipeLanguageModelSessionOptions
         )
 
@@ -65,8 +60,10 @@ class RagPipeline(
             GEMINI_API_KEY
         )
     }
+    private val chunker = TextChunker()
 
     private val config = ChainConfig.create(
+
         mediaPipeLanguageModel,
         PromptBuilder(PROMPT_TEMPLATE),
         DefaultSemanticTextMemory(
@@ -81,40 +78,11 @@ class RagPipeline(
     }
 
     fun memorizeChunks(context: Context, filename: String) {
-        // BufferedReader is needed to read the *.txt file
-        // Create and Initialize BufferedReader
-//        val reader = BufferedReader(
-//            InputStreamReader(
-//                context.assets.open(filename)
-//            )
-//        )
-        val sb = StringBuilder()
-//        val texts = mutableListOf<String>()
-//        generateSequence { reader.readLine() }
-//            .forEach { line ->
-//                if (line.startsWith(CHUNK_SEPARATOR)) {
-//                    if (sb.isNotEmpty()) {
-//                        val chunk = sb.toString()
-//                        texts.add(chunk)
-//                    }
-//                    sb.clear()
-//                    sb.append(line.removePrefix(CHUNK_SEPARATOR).trim())
-//                } else {
-//                    sb.append(" ")
-//                    sb.append(line)
-//                }
-//            }
-//        if (sb.isNotEmpty()) {
-//            texts.add(sb.toString())
-//        }
-//        reader.close()
-//        if (texts.isNotEmpty()) {
-//            return memorize(texts)
-//        }
-
         val (content, _) = pdfLoader.load(filename)
         val texts = splitter.splitText(content)
-        memorize(texts)
+        val testTexts = chunker.chunk(content, 40, 20)
+//        Log.d(TAG, "Test text [0]'s len: ${testTexts[0].length}")
+        memorize(testTexts)
 
         Log.d(TAG, "Memorize done!!!")
     }
@@ -150,10 +118,9 @@ class RagPipeline(
         private const val EMBEDDING_GEMMA_MODEL_PATH = "/data/local/tmp/gecko.tflite"
         private const val GEMINI_EMBEDDING_MODEL = "models/text-embedding-004"
         private const val GEMINI_API_KEY = "..."
-
         // The prompt template for the RetrievalAndInferenceChain. It takes two inputs: {0}, which is the retrieved context, and {1}, which is the user's query.
         private const val PROMPT_TEMPLATE: String =
-            "You are an assistant for question-answering tasks. Here are the things I want to remember: {0} Use the things I want to remember, answer the following question the user has: {1}"
+            "You are an assistant for question-answering tasks. Here are the things I want to remember: {0} Use the things I want to remember, answer the following question the user has: {1}. Please answer in Vietnamese"
         private const val TAG: String = "RAG PIPELINE"
     }
 }
