@@ -3,6 +3,8 @@ package com.example.kianarag.rag
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import com.example.kianarag.KianaRAGApplication
+import com.example.kianarag.util.PdfLoader
 import com.google.ai.edge.localagents.rag.chains.ChainConfig
 import com.google.ai.edge.localagents.rag.chains.RetrievalAndInferenceChain
 import com.google.ai.edge.localagents.rag.memory.DefaultSemanticTextMemory
@@ -32,7 +34,12 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import kotlin.jvm.optionals.getOrNull
 
-class RagPipeline(private val application: Application) {
+class RagPipeline(
+    private val application: Application,
+    private val pdfLoader: PdfLoader,
+    private val splitter: RecursiveCharacterTextSplitter
+) {
+
     private val mediaPipeLanguageModelOptions: LlmInferenceOptions =
         LlmInferenceOptions.builder().setModelPath(
             GEMMA_MODEL_PATH
@@ -73,36 +80,41 @@ class RagPipeline(private val application: Application) {
         mediaPipeLanguageModel.initialize()
     }
 
-
-
     fun memorizeChunks(context: Context, filename: String) {
         // BufferedReader is needed to read the *.txt file
         // Create and Initialize BufferedReader
-        val reader = BufferedReader(InputStreamReader(context.assets.open(filename)))
-
+//        val reader = BufferedReader(
+//            InputStreamReader(
+//                context.assets.open(filename)
+//            )
+//        )
         val sb = StringBuilder()
-        val texts = mutableListOf<String>()
-        generateSequence { reader.readLine() }
-            .forEach { line ->
-                if (line.startsWith(CHUNK_SEPARATOR)) {
-                    if (sb.isNotEmpty()) {
-                        val chunk = sb.toString()
-                        texts.add(chunk)
-                    }
-                    sb.clear()
-                    sb.append(line.removePrefix(CHUNK_SEPARATOR).trim())
-                } else {
-                    sb.append(" ")
-                    sb.append(line)
-                }
-            }
-        if (sb.isNotEmpty()) {
-            texts.add(sb.toString())
-        }
-        reader.close()
-        if (texts.isNotEmpty()) {
-            return memorize(texts)
-        }
+//        val texts = mutableListOf<String>()
+//        generateSequence { reader.readLine() }
+//            .forEach { line ->
+//                if (line.startsWith(CHUNK_SEPARATOR)) {
+//                    if (sb.isNotEmpty()) {
+//                        val chunk = sb.toString()
+//                        texts.add(chunk)
+//                    }
+//                    sb.clear()
+//                    sb.append(line.removePrefix(CHUNK_SEPARATOR).trim())
+//                } else {
+//                    sb.append(" ")
+//                    sb.append(line)
+//                }
+//            }
+//        if (sb.isNotEmpty()) {
+//            texts.add(sb.toString())
+//        }
+//        reader.close()
+//        if (texts.isNotEmpty()) {
+//            return memorize(texts)
+//        }
+
+        val (content, _) = pdfLoader.load(filename)
+        val texts = splitter.splitText(content)
+        memorize(texts)
 
         Log.d(TAG, "Memorize done!!!")
     }
@@ -133,7 +145,7 @@ class RagPipeline(private val application: Application) {
         private const val COMPUTE_EMBEDDINGS_LOCALLY = true
         private const val USE_GPU_FOR_EMBEDDINGS = true
         private const val CHUNK_SEPARATOR = "<chunk_splitter>"
-        private const val GEMMA_MODEL_PATH = "/data/local/tmp/llm/gemma3-1b-it-int4.task"
+        private const val GEMMA_MODEL_PATH = "/data/local/tmp/llm/gemma3.task"
         private const val TOKENIZER_MODEL_PATH = "/data/local/tmp/sentencepiece.model"
         private const val EMBEDDING_GEMMA_MODEL_PATH = "/data/local/tmp/gecko.tflite"
         private const val GEMINI_EMBEDDING_MODEL = "models/text-embedding-004"

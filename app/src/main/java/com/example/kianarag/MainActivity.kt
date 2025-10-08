@@ -53,7 +53,6 @@ class MainActivity : ComponentActivity() {
             Toast.makeText(this, "Permissions denied", Toast.LENGTH_SHORT).show()
         }
     }
-    val query = "What is Mumbai's former name?"
 
     private val pickPdfLauncher = registerForActivityResult(
         ActivityResultContracts.OpenMultipleDocuments()
@@ -67,8 +66,6 @@ class MainActivity : ComponentActivity() {
                 copyFileToAppDirectory(uri, fileName)
             }
         }
-
-
         chatViewModel.memorizeChunks(fileNames[0])
     }
 
@@ -137,9 +134,8 @@ class MainActivity : ComponentActivity() {
                             IndexScreen(
                                 retrievedText = retrievedText,
                                 onIndexClick = {
-//                                    val mimetypes = arrayOf("application/pdf")
-//                                    pickPdfLauncher.launch(mimetypes)
-                                    chatViewModel.memorizeChunks("sample_context.txt")
+                                    val mimetypes = arrayOf("application/pdf")
+                                    pickPdfLauncher.launch(mimetypes)
                                 },
                                 onRetrieveClick = {
                                     retrievedText = "Testing"

@@ -47,26 +47,26 @@ android {
 //    }
 }
 
-extra["ASSET_DIR"] = "$projectDir/src/main/assets"
-extra["TEST_ASSETS_DIR"] = "$projectDir/src/androidTest/assets"
+//extra["ASSET_DIR"] = "$projectDir/src/main/assets"
+//extra["TEST_ASSETS_DIR"] = "$projectDir/src/androidTest/assets"
+//
+//
+//tasks.register<Download>("downloadMobileBertModel") {
+//    src("https://storage.googleapis.com/mediapipe-models/text_embedder/bert_embedder/float32/1/bert_embedder.tflite")
+//    dest("$projectDir/src/main/assets/mobile_bert.tflite")
+//    overwrite(false)
+//}
+//
+//tasks.register<Download>("downloadAverageWordModel") {
+//    src("https://storage.googleapis.com/mediapipe-models/text_embedder/average_word_embedder/float32/1/average_word_embedder.tflite")
+//    dest("$projectDir/src/main/assets/average_word.tflite")
+//    overwrite(false)
+//}
 
 
-tasks.register<Download>("downloadMobileBertModel") {
-    src("https://storage.googleapis.com/mediapipe-models/text_embedder/bert_embedder/float32/1/bert_embedder.tflite")
-    dest("$projectDir/src/main/assets/mobile_bert.tflite")
-    overwrite(false)
-}
-
-tasks.register<Download>("downloadAverageWordModel") {
-    src("https://storage.googleapis.com/mediapipe-models/text_embedder/average_word_embedder/float32/1/average_word_embedder.tflite")
-    dest("$projectDir/src/main/assets/average_word.tflite")
-    overwrite(false)
-}
-
-
-tasks.named("preBuild") {
-    dependsOn("downloadMobileBertModel", "downloadAverageWordModel")
-}
+//tasks.named("preBuild") {
+//    dependsOn("downloadMobileBertModel", "downloadAverageWordModel")
+//}
 
 dependencies {
 
@@ -93,7 +93,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.localagents.rag)
     implementation(libs.tasks.genai)
-    // https://mvnrepository.com/artifact/io.insert-koin/koin-android
     implementation(libs.koin.android)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.10.2")
+    implementation(libs.kotlinx.coroutines.guava)
+//    implementation(project.dependencies.platform("io.insert-koin:koin-bom:4.1.2-Beta1"))
+//    implementation(libs.koin.core)
 }
