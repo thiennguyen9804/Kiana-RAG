@@ -3,6 +3,8 @@ package com.example.kianarag.rag
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import com.example.kianarag.data.Chunk
+import com.example.kianarag.data.ObjectBoxAdapter
 import com.example.kianarag.util.PdfLoader
 import com.google.ai.edge.localagents.rag.chains.ChainConfig
 import com.google.ai.edge.localagents.rag.chains.RetrievalAndInferenceChain
@@ -30,17 +32,21 @@ import kotlin.jvm.optionals.getOrNull
 class RagPipeline(
     private val application: Application,
     private val pdfLoader: PdfLoader,
-    private val splitter: BasicCharacterSplitter
+    private val splitter: BasicCharacterSplitter,
+    private val objectBox: ObjectBoxAdapter
 ) {
     private val mediaPipeLanguageModelOptions: LlmInferenceOptions =
         LlmInferenceOptions.builder()
-        .setModelPath(GEMMA_MODEL_PATH)
-        .setPreferredBackend(LlmInference.Backend.GPU)
-        .setMaxTokens(1024)
-        .build()
+            .setModelPath(GEMMA_MODEL_PATH)
+            .setPreferredBackend(LlmInference.Backend.GPU)
+            .setMaxTokens(1024)
+            .build()
     private val mediaPipeLanguageModelSessionOptions: LlmInferenceSession.LlmInferenceSessionOptions =
-        LlmInferenceSession.LlmInferenceSessionOptions.builder().setTemperature(1f)
-            .setTopP(0.95f).setTopK(64).build()
+        LlmInferenceSession.LlmInferenceSessionOptions.builder()
+            .setTemperature(1f)
+            .setTopP(0.95f)
+            .setTopK(64)
+            .build()
     private val mediaPipeLanguageModel: MediaPipeLlmBackend =
         MediaPipeLlmBackend(
             application.applicationContext,
@@ -62,13 +68,21 @@ class RagPipeline(
     }
     private val chunker = TextChunker()
 
-    private val config = ChainConfig.create(
-
+    /*private val config = ChainConfig.create(
         mediaPipeLanguageModel,
         PromptBuilder(PROMPT_TEMPLATE),
         DefaultSemanticTextMemory(
             // Gecko embedding model dimension is 768
             SqliteVectorStore(768), embedder
+        )
+    )*/
+
+    private val config = ChainConfig.create(
+        mediaPipeLanguageModel,
+        PromptBuilder(PROMPT_TEMPLATE),
+        DefaultSemanticTextMemory(
+            // Gecko embedding model dimension is 768
+            objectBox, embedder
         )
     )
     private val retrievalAndInferenceChain = RetrievalAndInferenceChain(config)

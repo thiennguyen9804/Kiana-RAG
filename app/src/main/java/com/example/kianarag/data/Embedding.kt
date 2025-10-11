@@ -27,5 +27,4 @@ data class Embedding<T>(
         return result
     }
 
-
 }

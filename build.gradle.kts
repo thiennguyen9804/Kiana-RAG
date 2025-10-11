@@ -1,7 +1,11 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
+    val objectboxVersion by extra("5.0.1")
+
     dependencies {
         classpath(libs.gradle.download.task)
+        classpath(libs.gradle)
+        classpath("io.objectbox:objectbox-gradle-plugin:$objectboxVersion")
     }
 }
 

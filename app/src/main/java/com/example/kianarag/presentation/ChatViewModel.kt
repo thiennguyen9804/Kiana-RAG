@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.kianarag.data.ObjectBoxAdapter
 import com.example.kianarag.rag.RagPipeline
 import com.example.kianarag.rag.BasicCharacterSplitter
 import com.example.kianarag.util.PdfLoader
@@ -20,7 +21,14 @@ class ChatViewModel(
         chunkSize = 200,
         chunkOverlap = 100
     )
-    private val ragPipeline = RagPipeline(application, pdfLoader, splitter)
+
+    private val objectBox = ObjectBoxAdapter(application = application)
+    private val ragPipeline = RagPipeline(
+        application = application,
+        pdfLoader = pdfLoader,
+        splitter = splitter,
+        objectBox = objectBox
+    )
 
     internal val messages = emptyList<MessageData>().toMutableStateList()
     internal val statistics = mutableStateOf("")
